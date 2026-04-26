@@ -22,13 +22,19 @@ function normalizeProducts(products) {
 
 async function initDB() {
   try {
-    const mongoUri = process.env.VITE_MONGODB_URI || 'mongodb+srv://ismail:ismail123@cluster0.fjw1q9u.mongodb.net/?appName=Cluster0';
+    const mongoUri = process.env.MONGODB_URI || process.env.VITE_MONGODB_URI || 'mongodb+srv://ismail:ismail123@cluster0.fjw1q9u.mongodb.net/?appName=Cluster0';
+    const dbName = process.env.DATABASE_NAME || 'trolley';
+    
+    console.log('[v0] Connecting to MongoDB...');
+    console.log('[v0] Database name:', dbName);
+    
     const client = new MongoClient(mongoUri);
     await client.connect();
-    db = client.db('trolley');
+    db = client.db(dbName);
     console.log('[v0] Database connected successfully');
   } catch (error) {
-    console.error('[v0] Database connection error:', error);
+    console.error('[v0] Database connection error:', error.message);
+    process.exit(1);
   }
 }
 
