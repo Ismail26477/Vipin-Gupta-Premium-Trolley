@@ -1,15 +1,17 @@
-const API_BASE = import.meta.env.VITE_API_URL || 
-  (typeof window !== 'undefined' && window.location.hostname === 'localhost' 
-    ? 'http://localhost:5000/api' 
-    : `${window.location.origin}/api`);
+// Use relative paths that work on any domain (localhost or production)
+const API_BASE = '/api';
 
 export async function fetchAPI<T>(endpoint: string): Promise<T> {
   try {
-    const response = await fetch(`${API_BASE}${endpoint}`);
+    const url = `${API_BASE}${endpoint}`;
+    console.log(`[v0] Fetching from ${url}`);
+    const response = await fetch(url);
     if (!response.ok) {
+      console.error(`[v0] API returned status ${response.status}`, response.statusText);
       throw new Error(`API error: ${response.statusText}`);
     }
     const data = await response.json();
+    console.log(`[v0] Received data from ${endpoint}:`, data);
     if (!data.success) {
       throw new Error(data.error || 'Unknown error');
     }
