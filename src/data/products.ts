@@ -1,5 +1,5 @@
-// API-based product fetching
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+// API-based product fetching - Use relative paths that work on any domain
+const API_BASE = '/api';
 
 export interface ProductReview {
   id: string;
