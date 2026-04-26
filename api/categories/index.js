@@ -33,13 +33,21 @@ async function handler(req, res) {
 
   let client;
   try {
-    console.log('[v0] Fetching categories...');
+    console.log('[v0] Fetching categories from:', mongoUri.substring(0, 50) + '...');
+    console.log('[v0] Database name:', dbName);
+    
     client = new MongoClient(mongoUri, { 
-      serverSelectionTimeoutMS: 10000,
-      socketTimeoutMS: 10000,
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 5000,
+      connectTimeoutMS: 5000,
     });
+    
+    console.log('[v0] Connecting to MongoDB for categories...');
     await client.connect();
+    console.log('[v0] Connected to MongoDB');
+    
     const db = client.db(dbName);
+    console.log('[v0] Fetching from categories collection...');
     const categories = await db.collection('categories').find({}).toArray();
     
     console.log('[v0] Fetched', categories.length, 'categories');
@@ -49,10 +57,12 @@ async function handler(req, res) {
     });
   } catch (error) {
     console.error('[v0] Error fetching categories:', error.message);
+    console.error('[v0] Error stack:', error.stack);
     res.status(500).json({
       success: false,
       error: 'Failed to fetch categories',
-      details: error.message
+      details: error.message,
+      timestamp: new Date().toISOString()
     });
   } finally {
     if (client) {
