@@ -1,5 +1,5 @@
-// API-based category fetching
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+// API-based category fetching - Use relative paths that work on any domain
+const API_BASE = '/api';
 
 export interface Subcategory {
   id: string;
