@@ -40,13 +40,21 @@ async function handler(req, res) {
 
   let client;
   try {
-    console.log('[v0] Fetching products...');
+    console.log('[v0] Fetching products from:', mongoUri.substring(0, 50) + '...');
+    console.log('[v0] Database name:', dbName);
+    
     client = new MongoClient(mongoUri, { 
-      serverSelectionTimeoutMS: 10000,
-      socketTimeoutMS: 10000,
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 5000,
+      connectTimeoutMS: 5000,
     });
+    
+    console.log('[v0] Connecting to MongoDB...');
     await client.connect();
+    console.log('[v0] Connected to MongoDB');
+    
     const db = client.db(dbName);
+    console.log('[v0] Fetching from products collection...');
     const products = await db.collection('products').find({}).limit(50).toArray();
     
     console.log('[v0] Fetched', products.length, 'products');
@@ -56,10 +64,12 @@ async function handler(req, res) {
     });
   } catch (error) {
     console.error('[v0] Error fetching products:', error.message);
+    console.error('[v0] Error stack:', error.stack);
     res.status(500).json({
       success: false,
       error: 'Failed to fetch products',
-      details: error.message
+      details: error.message,
+      timestamp: new Date().toISOString()
     });
   } finally {
     if (client) {
