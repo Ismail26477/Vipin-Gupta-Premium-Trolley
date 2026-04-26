@@ -1,0 +1,96 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Space+Grotesk:wght@300..700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 30 20% 96%;
+    --foreground: 24 30% 12%;
+
+    --card: 30 25% 99%;
+    --card-foreground: 24 30% 12%;
+
+    --popover: 30 25% 99%;
+    --popover-foreground: 24 30% 12%;
+
+    --primary: 24 56% 22%;
+    --primary-foreground: 35 30% 95%;
+
+    --secondary: 30 18% 92%;
+    --secondary-foreground: 24 30% 12%;
+
+    --muted: 30 15% 90%;
+    --muted-foreground: 24 10% 46%;
+
+    --accent: 32 60% 52%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 30 15% 85%;
+    --input: 30 15% 85%;
+    --ring: 24 56% 22%;
+
+    --radius: 0.75rem;
+
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+
+    --font-heading: 'Space Grotesk', sans-serif;
+    --font-body: 'DM Sans', sans-serif;
+
+    --sidebar-background: 30 20% 96%;
+    --sidebar-foreground: 24 15% 26%;
+    --sidebar-primary: 24 56% 22%;
+    --sidebar-primary-foreground: 35 30% 95%;
+    --sidebar-accent: 30 18% 92%;
+    --sidebar-accent-foreground: 24 30% 12%;
+    --sidebar-border: 30 15% 85%;
+    --sidebar-ring: 24 56% 22%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-body antialiased;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+  }
+}
+
+@layer utilities {
+  .font-heading {
+    font-family: var(--font-heading);
+  }
+  .font-body {
+    font-family: var(--font-body);
+  }
+}
+
+/* Hide scrollbar for clean experience */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Hide page scrollbar globally */
+html::-webkit-scrollbar {
+  display: none;
+}
+html {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

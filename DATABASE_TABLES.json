@@ -1,0 +1,462 @@
+{
+  "database": {
+    "provider": "Supabase PostgreSQL",
+    "version": "14.4",
+    "schema": "public"
+  },
+  "tables": {
+    "products": {
+      "description": "Main product catalog for trolley bags and luggage",
+      "columns": {
+        "id": {
+          "type": "UUID",
+          "constraint": "PRIMARY KEY DEFAULT gen_random_uuid()",
+          "description": "Unique product identifier"
+        },
+        "name": {
+          "type": "VARCHAR(255)",
+          "constraint": "NOT NULL",
+          "description": "Product name",
+          "example": "Wave Luxe Set – Fuchsia"
+        },
+        "description": {
+          "type": "TEXT",
+          "constraint": "NOT NULL",
+          "description": "Detailed product description"
+        },
+        "category": {
+          "type": "VARCHAR(100)",
+          "constraint": "NOT NULL",
+          "description": "Main category",
+          "values": ["luggage"]
+        },
+        "subcategory": {
+          "type": "VARCHAR(100)",
+          "constraint": "NOT NULL",
+          "description": "Sub-category",
+          "values": ["cabin-size", "medium-size", "large-size", "travel-sets", "hard-shell", "soft-luggage"]
+        },
+        "price": {
+          "type": "DECIMAL(10,2)",
+          "constraint": "NOT NULL",
+          "description": "Base price in INR"
+        },
+        "discount_price": {
+          "type": "DECIMAL(10,2)",
+          "constraint": "NULLABLE",
+          "description": "Discounted price"
+        },
+        "stock": {
+          "type": "INT",
+          "constraint": "DEFAULT 0",
+          "description": "Available quantity"
+        },
+        "brand": {
+          "type": "VARCHAR(100)",
+          "description": "Manufacturer",
+          "values": ["Wave", "Chevron", "Urban", "Royal", "Luxe", "Zenith", "Elite", "Traveler", "Apex", "Compass"]
+        },
+        "rating": {
+          "type": "DECIMAL(2,1)",
+          "description": "Average rating (0-5)"
+        },
+        "review_count": {
+          "type": "INT",
+          "constraint": "DEFAULT 0",
+          "description": "Total number of reviews"
+        },
+        "images": {
+          "type": "TEXT[]",
+          "description": "Array of image URLs"
+        },
+        "specs": {
+          "type": "JSONB",
+          "description": "Product specifications as JSON",
+          "example": {
+            "Capacity": "22L",
+            "Material": "Polycarbonate",
+            "Wheels": "360° Spinner"
+          }
+        },
+        "is_featured": {
+          "type": "BOOLEAN",
+          "constraint": "DEFAULT false",
+          "description": "Featured product flag"
+        },
+        "is_trending": {
+          "type": "BOOLEAN",
+          "constraint": "DEFAULT false",
+          "description": "Trending product flag"
+        },
+        "is_best_seller": {
+          "type": "BOOLEAN",
+          "constraint": "DEFAULT false",
+          "description": "Best seller flag"
+        },
+        "is_new_arrival": {
+          "type": "BOOLEAN",
+          "constraint": "DEFAULT false",
+          "description": "New arrival flag"
+        },
+        "tags": {
+          "type": "TEXT[]",
+          "description": "Search tags",
+          "example": ["cabin", "fuchsia", "lightweight", "tsa-lock"]
+        },
+        "created_at": {
+          "type": "TIMESTAMP",
+          "constraint": "DEFAULT CURRENT_TIMESTAMP",
+          "description": "Creation timestamp"
+        },
+        "updated_at": {
+          "type": "TIMESTAMP",
+          "constraint": "DEFAULT CURRENT_TIMESTAMP",
+          "description": "Last update timestamp"
+        }
+      }
+    },
+    "product_reviews": {
+      "description": "Customer reviews and ratings for products",
+      "columns": {
+        "id": {
+          "type": "UUID",
+          "constraint": "PRIMARY KEY DEFAULT gen_random_uuid()"
+        },
+        "product_id": {
+          "type": "UUID",
+          "constraint": "NOT NULL, FOREIGN KEY REFERENCES products(id) ON DELETE CASCADE"
+        },
+        "user_name": {
+          "type": "VARCHAR(100)",
+          "constraint": "NOT NULL"
+        },
+        "rating": {
+          "type": "INT",
+          "constraint": "NOT NULL, CHECK (rating >= 1 AND rating <= 5)"
+        },
+        "comment": {
+          "type": "TEXT",
+          "constraint": "NULLABLE"
+        },
+        "review_date": {
+          "type": "TIMESTAMP",
+          "constraint": "DEFAULT CURRENT_TIMESTAMP"
+        },
+        "helpful_count": {
+          "type": "INT",
+          "constraint": "DEFAULT 0"
+        },
+        "created_at": {
+          "type": "TIMESTAMP",
+          "constraint": "DEFAULT CURRENT_TIMESTAMP"
+        }
+      }
+    },
+    "categories": {
+      "description": "Product categories",
+      "columns": {
+        "id": {
+          "type": "VARCHAR(50)",
+          "constraint": "PRIMARY KEY"
+        },
+        "name": {
+          "type": "VARCHAR(100)",
+          "constraint": "NOT NULL"
+        },
+        "slug": {
+          "type": "VARCHAR(100)",
+          "constraint": "NOT NULL, UNIQUE"
+        },
+        "icon": {
+          "type": "VARCHAR(10)"
+        },
+        "image_url": {
+          "type": "VARCHAR(255)"
+        },
+        "created_at": {
+          "type": "TIMESTAMP",
+          "constraint": "DEFAULT CURRENT_TIMESTAMP"
+        }
+      }
+    },
+    "subcategories": {
+      "description": "Product sub-categories",
+      "columns": {
+        "id": {
+          "type": "VARCHAR(50)",
+          "constraint": "PRIMARY KEY"
+        },
+        "parent_id": {
+          "type": "VARCHAR(50)",
+          "constraint": "NOT NULL, FOREIGN KEY REFERENCES categories(id) ON DELETE CASCADE"
+        },
+        "name": {
+          "type": "VARCHAR(100)",
+          "constraint": "NOT NULL"
+        },
+        "slug": {
+          "type": "VARCHAR(100)",
+          "constraint": "NOT NULL"
+        },
+        "created_at": {
+          "type": "TIMESTAMP",
+          "constraint": "DEFAULT CURRENT_TIMESTAMP"
+        }
+      }
+    },
+    "shopping_carts": {
+      "description": "User shopping cart items",
+      "columns": {
+        "id": {
+          "type": "UUID",
+          "constraint": "PRIMARY KEY DEFAULT gen_random_uuid()"
+        },
+        "user_id": {
+          "type": "UUID",
+          "constraint": "NOT NULL"
+        },
+        "product_id": {
+          "type": "UUID",
+          "constraint": "NOT NULL, FOREIGN KEY REFERENCES products(id) ON DELETE CASCADE"
+        },
+        "quantity": {
+          "type": "INT",
+          "constraint": "NOT NULL, DEFAULT 1"
+        },
+        "added_at": {
+          "type": "TIMESTAMP",
+          "constraint": "DEFAULT CURRENT_TIMESTAMP"
+        },
+        "updated_at": {
+          "type": "TIMESTAMP",
+          "constraint": "DEFAULT CURRENT_TIMESTAMP"
+        }
+      }
+    },
+    "wishlists": {
+      "description": "User wishlist/favorites",
+      "columns": {
+        "id": {
+          "type": "UUID",
+          "constraint": "PRIMARY KEY DEFAULT gen_random_uuid()"
+        },
+        "user_id": {
+          "type": "UUID",
+          "constraint": "NOT NULL"
+        },
+        "product_id": {
+          "type": "UUID",
+          "constraint": "NOT NULL, FOREIGN KEY REFERENCES products(id) ON DELETE CASCADE"
+        },
+        "added_at": {
+          "type": "TIMESTAMP",
+          "constraint": "DEFAULT CURRENT_TIMESTAMP"
+        }
+      }
+    },
+    "orders": {
+      "description": "Customer orders",
+      "columns": {
+        "id": {
+          "type": "UUID",
+          "constraint": "PRIMARY KEY DEFAULT gen_random_uuid()"
+        },
+        "user_id": {
+          "type": "UUID",
+          "constraint": "NOT NULL"
+        },
+        "order_number": {
+          "type": "VARCHAR(20)",
+          "constraint": "NOT NULL, UNIQUE",
+          "example": "ORD-2024-001234"
+        },
+        "total_amount": {
+          "type": "DECIMAL(12,2)",
+          "constraint": "NOT NULL"
+        },
+        "discount_amount": {
+          "type": "DECIMAL(10,2)",
+          "constraint": "DEFAULT 0"
+        },
+        "tax_amount": {
+          "type": "DECIMAL(10,2)",
+          "constraint": "DEFAULT 0"
+        },
+        "final_amount": {
+          "type": "DECIMAL(12,2)",
+          "constraint": "NOT NULL"
+        },
+        "status": {
+          "type": "VARCHAR(50)",
+          "constraint": "DEFAULT 'pending'",
+          "values": ["pending", "confirmed", "processing", "shipped", "delivered", "cancelled"]
+        },
+        "payment_method": {
+          "type": "VARCHAR(50)",
+          "values": ["credit_card", "debit_card", "upi", "net_banking"]
+        },
+        "shipping_address": {
+          "type": "TEXT"
+        },
+        "billing_address": {
+          "type": "TEXT"
+        },
+        "notes": {
+          "type": "TEXT"
+        },
+        "created_at": {
+          "type": "TIMESTAMP",
+          "constraint": "DEFAULT CURRENT_TIMESTAMP"
+        },
+        "updated_at": {
+          "type": "TIMESTAMP",
+          "constraint": "DEFAULT CURRENT_TIMESTAMP"
+        }
+      }
+    },
+    "order_items": {
+      "description": "Individual items in orders",
+      "columns": {
+        "id": {
+          "type": "UUID",
+          "constraint": "PRIMARY KEY DEFAULT gen_random_uuid()"
+        },
+        "order_id": {
+          "type": "UUID",
+          "constraint": "NOT NULL, FOREIGN KEY REFERENCES orders(id) ON DELETE CASCADE"
+        },
+        "product_id": {
+          "type": "UUID",
+          "constraint": "NOT NULL, FOREIGN KEY REFERENCES products(id)"
+        },
+        "quantity": {
+          "type": "INT",
+          "constraint": "NOT NULL"
+        },
+        "unit_price": {
+          "type": "DECIMAL(10,2)",
+          "constraint": "NOT NULL"
+        },
+        "total_price": {
+          "type": "DECIMAL(12,2)",
+          "constraint": "NOT NULL"
+        },
+        "created_at": {
+          "type": "TIMESTAMP",
+          "constraint": "DEFAULT CURRENT_TIMESTAMP"
+        }
+      }
+    },
+    "users": {
+      "description": "Customer user accounts",
+      "columns": {
+        "id": {
+          "type": "UUID",
+          "constraint": "PRIMARY KEY DEFAULT gen_random_uuid()"
+        },
+        "email": {
+          "type": "VARCHAR(255)",
+          "constraint": "NOT NULL, UNIQUE"
+        },
+        "phone": {
+          "type": "VARCHAR(20)"
+        },
+        "first_name": {
+          "type": "VARCHAR(100)"
+        },
+        "last_name": {
+          "type": "VARCHAR(100)"
+        },
+        "password_hash": {
+          "type": "VARCHAR(255)"
+        },
+        "profile_picture_url": {
+          "type": "VARCHAR(255)"
+        },
+        "date_of_birth": {
+          "type": "DATE"
+        },
+        "gender": {
+          "type": "VARCHAR(20)",
+          "values": ["male", "female", "other"]
+        },
+        "is_active": {
+          "type": "BOOLEAN",
+          "constraint": "DEFAULT true"
+        },
+        "email_verified": {
+          "type": "BOOLEAN",
+          "constraint": "DEFAULT false"
+        },
+        "created_at": {
+          "type": "TIMESTAMP",
+          "constraint": "DEFAULT CURRENT_TIMESTAMP"
+        },
+        "updated_at": {
+          "type": "TIMESTAMP",
+          "constraint": "DEFAULT CURRENT_TIMESTAMP"
+        },
+        "last_login": {
+          "type": "TIMESTAMP"
+        }
+      }
+    },
+    "addresses": {
+      "description": "Customer addresses (shipping/billing)",
+      "columns": {
+        "id": {
+          "type": "UUID",
+          "constraint": "PRIMARY KEY DEFAULT gen_random_uuid()"
+        },
+        "user_id": {
+          "type": "UUID",
+          "constraint": "NOT NULL, FOREIGN KEY REFERENCES users(id) ON DELETE CASCADE"
+        },
+        "type": {
+          "type": "VARCHAR(20)",
+          "values": ["home", "office", "other"]
+        },
+        "full_name": {
+          "type": "VARCHAR(100)",
+          "constraint": "NOT NULL"
+        },
+        "phone": {
+          "type": "VARCHAR(20)",
+          "constraint": "NOT NULL"
+        },
+        "street_address": {
+          "type": "VARCHAR(255)",
+          "constraint": "NOT NULL"
+        },
+        "city": {
+          "type": "VARCHAR(100)",
+          "constraint": "NOT NULL"
+        },
+        "state": {
+          "type": "VARCHAR(100)",
+          "constraint": "NOT NULL"
+        },
+        "pincode": {
+          "type": "VARCHAR(10)",
+          "constraint": "NOT NULL"
+        },
+        "country": {
+          "type": "VARCHAR(100)",
+          "constraint": "DEFAULT 'India'"
+        },
+        "is_default": {
+          "type": "BOOLEAN",
+          "constraint": "DEFAULT false"
+        },
+        "created_at": {
+          "type": "TIMESTAMP",
+          "constraint": "DEFAULT CURRENT_TIMESTAMP"
+        },
+        "updated_at": {
+          "type": "TIMESTAMP",
+          "constraint": "DEFAULT CURRENT_TIMESTAMP"
+        }
+      }
+    }
+  }
+}
