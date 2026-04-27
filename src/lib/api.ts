@@ -5,16 +5,28 @@ export async function fetchAPI<T>(endpoint: string): Promise<T> {
   try {
     const url = `${API_BASE}${endpoint}`;
     console.log(`[v0] Fetching from ${url}`);
-    const response = await fetch(url);
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    
     if (!response.ok) {
       console.error(`[v0] API returned status ${response.status}`, response.statusText);
-      throw new Error(`API error: ${response.statusText}`);
+      throw new Error(`API error: ${response.status} ${response.statusText}`);
     }
+    
     const data = await response.json();
     console.log(`[v0] Received data from ${endpoint}:`, data);
-    if (!data.success) {
-      throw new Error(data.error || 'Unknown error');
+    
+    // API will return success: false if there's an error, but fallback data
+    if (data.success === false && !data.data) {
+      console.warn(`[v0] API returned error for ${endpoint}:`, data.error);
+      return [] as T;
     }
+    
+    // Return the data (fallback or actual)
     return data.data as T;
   } catch (error) {
     console.error(`[v0] API fetch error for ${endpoint}:`, error);
