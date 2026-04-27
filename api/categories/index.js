@@ -1,18 +1,17 @@
 const { MongoClient } = require('mongodb');
 
-const mongoUri = process.env.MONGODB_URI || 'mongodb+srv://ismail:ismail123@cluster0.fjw1q9u.mongodb.net/?appName=Cluster0';
+const mongoUri = process.env.MONGODB_URI;
 const dbName = process.env.DATABASE_NAME || 'trolley';
 
-async function getDB() {
-  console.log('[v0] Connecting to MongoDB for categories...');
-  const client = new MongoClient(mongoUri, { 
-    serverSelectionTimeoutMS: 10000,
-    socketTimeoutMS: 10000,
-  });
-  await client.connect();
-  console.log('[v0] Connected to MongoDB');
-  return client.db(dbName);
-}
+// Default categories fallback
+const defaultCategories = [
+  { id: 'cabin', name: 'Cabin Trolleys', slug: 'cabin', description: 'Compact cabin-sized luggage' },
+  { id: 'medium', name: 'Medium Trolleys', slug: 'medium', description: 'Perfect for weekend trips' },
+  { id: 'large', name: 'Large Trolleys', slug: 'large', description: 'Ideal for extended travels' },
+  { id: 'hardshell', name: 'Hard Shell', slug: 'hardshell', description: 'Durable hard shell luggage' },
+  { id: 'softshell', name: 'Soft Shell', slug: 'softshell', description: 'Flexible soft luggage' },
+  { id: 'sets', name: 'Luggage Sets', slug: 'sets', description: 'Complete luggage sets' },
+];
 
 async function handler(req, res) {
   // CORS headers
@@ -31,42 +30,57 @@ async function handler(req, res) {
     return res.status(405).json({ success: false, error: 'Method not allowed' });
   }
 
+  // Check if MongoDB URI is configured
+  if (!mongoUri) {
+    console.warn('[v0] MongoDB URI not configured, using default categories');
+    return res.status(200).json({
+      success: true,
+      data: defaultCategories,
+      source: 'default'
+    });
+  }
+
   let client;
   try {
-    console.log('[v0] Fetching categories from:', mongoUri.substring(0, 50) + '...');
-    console.log('[v0] Database name:', dbName);
+    console.log('[v0] Connecting to MongoDB for categories...');
     
     client = new MongoClient(mongoUri, { 
-      serverSelectionTimeoutMS: 5000,
-      socketTimeoutMS: 5000,
-      connectTimeoutMS: 5000,
+      serverSelectionTimeoutMS: 8000,
+      socketTimeoutMS: 8000,
+      connectTimeoutMS: 8000,
+      retryWrites: true,
     });
     
-    console.log('[v0] Connecting to MongoDB for categories...');
     await client.connect();
     console.log('[v0] Connected to MongoDB');
     
     const db = client.db(dbName);
-    console.log('[v0] Fetching from categories collection...');
     const categories = await db.collection('categories').find({}).toArray();
     
     console.log('[v0] Fetched', categories.length, 'categories');
     res.status(200).json({
       success: true,
-      data: categories
+      data: categories.length > 0 ? categories : defaultCategories,
+      source: 'database'
     });
   } catch (error) {
-    console.error('[v0] Error fetching categories:', error.message);
-    console.error('[v0] Error stack:', error.stack);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to fetch categories',
-      details: error.message,
-      timestamp: new Date().toISOString()
+    console.error('[v0] MongoDB error:', error.message);
+    console.warn('[v0] Falling back to default categories');
+    
+    // Return default categories instead of error
+    res.status(200).json({
+      success: true,
+      data: defaultCategories,
+      source: 'fallback',
+      warning: 'Using default data due to database error'
     });
   } finally {
     if (client) {
-      await client.close();
+      try {
+        await client.close();
+      } catch (e) {
+        console.error('[v0] Error closing MongoDB client:', e.message);
+      }
     }
   }
 }
